@@ -1,0 +1,31 @@
+do $$
+declare 
+age int  = 18;
+
+begin
+if(age<=18) then
+raise notice'you are % years old and not eligible', age;
+end if;
+end;
+$$
+
+
+do $$
+
+declare
+val int := 4;
+
+begin
+
+if val>0 and val<10 then
+raise notice 'num % is btw 1 and 10',val;
+
+elseif val>10 and val<20 then
+raise notice 'num % is btw 10 and 20',val;
+
+else 
+raise notice 'num % is more than 20',val;
+
+end if;
+end;
+$$
