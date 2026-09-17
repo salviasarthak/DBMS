@@ -1,0 +1,55 @@
+--Experiment 8
+
+Create a Stored Procedure that takes an EmpID, EmpNo, EmpSalary, Departments.
+
+Task->
+
+1. Pass the argument via Stored Procedure and add data in a Main Table.
+
+2. Add Data in Main Table only if the EmpID is odd, If even ID then Exception that is Even Not Allowed.
+
+----------------------------------------------------------------------------------------------
+Step 1: Create the Main Table
+
+CREATE TABLE Employee_Main (
+    EmpID INT PRIMARY KEY,
+    EmpNo VARCHAR(20) NOT NULL,
+    EmpSalary NUMERIC(10, 2) NOT NULL,
+    Departments VARCHAR(50) NOT NULL
+);
+
+
+Step 2: Create the Stored Procedure with Custom Exception
+
+In PostgreSQL (PL/pgSQL), stored procedures use CREATE OR REPLACE PROCEDURE and RAISE EXCEPTION to enforce conditional validation:
+
+CREATE OR REPLACE PROCEDURE insert_employee_odd_only(
+    p_EmpID INT,
+    p_EmpNo VARCHAR,
+    p_EmpSalary NUMERIC,
+    p_Departments VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if EmpID is even (remainder of EmpID / 2 is 0)
+    IF p_EmpID % 2 = 0 THEN
+        RAISE EXCEPTION 'Even Not Allowed: EmpID % is an even number', p_EmpID;
+    ELSE
+        -- Insert into main table if EmpID is odd
+        INSERT INTO Employee_Main (EmpID, EmpNo, EmpSalary, Departments)
+        VALUES (p_EmpID, p_EmpNo, p_EmpSalary, p_Departments);
+        
+        RAISE NOTICE 'Employee with ID % successfully added.', p_EmpID;
+    END IF;
+END;
+$$;
+
+
+Step 3: Verification & Testing
+
+CALL insert_employee_odd_only(101, 'EMP101', 65000.00, 'Engineering');
+
+CALL insert_employee_odd_only(102, 'EMP102', 72000.00, 'Marketing');
+
+SELECT * FROM Employee_Main;
