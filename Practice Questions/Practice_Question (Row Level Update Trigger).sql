@@ -1,64 +1,38 @@
+DROP TABLE IF EXISTS Salary_Hike;
 
-
-
-CREATE TABLE Books (
-    book_id INT PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    author VARCHAR(100) NOT NULL,
-    publisher VARCHAR(100),
-    price NUMERIC(8,2)
+CREATE TABLE Salary_Hike (
+    emp_id INTEGER PRIMARY KEY,
+    emp_name VARCHAR(100) NOT NULL,
+    salary NUMERIC(10,2) NOT NULL
 );
 
-CREATE TABLE Members (
-    member_id INT PRIMARY KEY,
-    member_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE,
-    phone VARCHAR(15)
-);
+INSERT INTO Salary_Hike (emp_id, emp_name, salary) VALUES
+(101, 'Amit Sharma', 85000.00),
+(102, 'Priya Patel', 95000.00),
+(103, 'Rahul Verma', 60000.00),
+(104, 'Ananya Iyer', 110000.00),
+(105, 'Vikram Singh', 55000.00);
 
-CREATE TABLE Issue_Record (
-    issue_id INT PRIMARY KEY,
-    book_id INT,
-    member_id INT,
-    issue_date DATE,
-    return_date DATE,
-    FOREIGN KEY (book_id) REFERENCES Books(book_id),
-    FOREIGN KEY (member_id) REFERENCES Members(member_id)
-);
 
-INSERT INTO Books VALUES
-(101,'Database System Concepts','Korth','McGraw Hill',650.00),
-(102,'Operating System','Galvin','Wiley',750.00),
-(103,'Computer Networks','Tanenbaum','Pearson',800.00);
-From 
-
-INSERT INTO Members VALUES
-(1,'Rahul Sharma','rahul@gmail.com','9876543210'),
-(2,'Priya Singh','priya@gmail.com','9876501234'),
-(3,'Amit Kumar','amit@gmail.com','9988776655');
-
-INSERT INTO Issue_Record VALUES
-(1001,101,1,'2026-07-01','2026-07-15'),
-(1002,102,2,'2026-07-02','2026-07-16');
-
-CREATE OR REPLACE TRIGGER trg_salary_hike
-BEFORE UPDATE OF salary ON Salary_Hike
-FOR EACH ROW
-
-DECLARE
-    salary_increase_exceeded EXCEPTION;
-
+CREATE OR REPLACE FUNCTION check_salary_hike()
+RETURNS TRIGGER
+AS $$
 BEGIN
 
-    IF :NEW.salary > :OLD.salary * 1.15 THEN
-        RAISE salary_increase_exceeded;
+    IF NEW.salary > OLD.salary * 1.15 THEN
+        RAISE EXCEPTION
+            'Salary increase cannot exceed 15%% of the old salary.';
     END IF;
 
-EXCEPTION
-    WHEN salary_increase_exceeded THEN
-        RAISE_APPLICATION_ERROR(
-            -20001,
-            'Salary increase cannot exceed 15% of the old salary.'
-        );
+    RETURN NEW;
 END;
-/
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trg_salary_hike
+BEFORE UPDATE OF salary ON Salary_Hike
+FOR EACH ROW
+EXECUTE FUNCTION check_salary_hike();
+
+
+SELECT * FROM Salary_Hike;
